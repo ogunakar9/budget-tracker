@@ -10,10 +10,19 @@ interface BudgetState {
   }>;
 }
 
-const initialState: BudgetState = {
-  incomes: [],
-  expenses: [],
+// Retrieve initial data from localStorage if available
+const loadFromLocalStorage = () => {
+  const savedIncomes = localStorage.getItem("incomes");
+  const savedExpenses = localStorage.getItem("expenses");
+
+  return {
+    incomes: savedIncomes ? JSON.parse(savedIncomes) : [],
+    expenses: savedExpenses ? JSON.parse(savedExpenses) : [],
+  };
 };
+
+// Initialize state from localStorage or default to empty arrays
+const initialState: BudgetState = loadFromLocalStorage();
 
 const budgetSlice = createSlice({
   name: "budget",
@@ -28,6 +37,7 @@ const budgetSlice = createSlice({
       }>
     ) => {
       state.incomes.push(action.payload);
+      localStorage.setItem("incomes", JSON.stringify(state.incomes)); // Save to localStorage
     },
     addExpense: (
       state,
@@ -39,6 +49,7 @@ const budgetSlice = createSlice({
       }>
     ) => {
       state.expenses.push(action.payload);
+      localStorage.setItem("expenses", JSON.stringify(state.expenses)); // Save to localStorage
     },
   },
 });
