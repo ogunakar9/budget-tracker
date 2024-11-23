@@ -1,4 +1,4 @@
-import AddEntryForm from "@/components/custom/AddEntryForm";
+import AddEntryForm from "@/components/custom/add-entry-form";
 
 export default function AddEntryPage() {
   return (

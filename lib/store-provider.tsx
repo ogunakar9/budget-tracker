@@ -15,5 +15,7 @@ export default function StoreProvider({
     storeRef.current = makeStore();
   }
 
+  //TODO: fix localstorage error on mount
+
   return <Provider store={storeRef.current}>{children}</Provider>;
 }
