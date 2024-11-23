@@ -1,130 +1,191 @@
 "use client";
 
 import { useState } from "react";
-import { addIncome, addExpense } from "@/lib/features/budget/budgetSlice";
+import { z } from "zod";
+// import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-// import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
+  SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SelectContent } from "@radix-ui/react-select";
-import { RootState } from "@/lib/store";
-import { useAppSelector, useAppDispatch } from "@/lib/hooks";
+import { addIncome, addExpense } from "@/lib/features/budget/budgetSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+
+// Validation schema
+const formSchema = z
+  .object({
+    type: z.enum(["income", "expense"]),
+    description: z.string().min(1, "Description is required."),
+    amount: z.number().positive("Amount must be greater than 0."),
+    // amount: z.number().positive("Amount must be greater than 0."),
+    date: z.string().min(1, "Date is required."),
+    category: z.string().optional(), // Required only for "expense"
+  })
+  .refine(
+    (data) =>
+      data.type === "income" ||
+      (data.type === "expense" && data!.category!.length > 0),
+    {
+      message: "Category is required for expenses.",
+      path: ["category"],
+    }
+  );
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function AddEntryForm() {
-  const [type, setType] = useState<"income" | "expense">("income");
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
-  const [category, setCategory] = useState(""); // Only for expenses
-
   const dispatch = useAppDispatch();
-  const incomes = useAppSelector((state: RootState) => state.budget.incomes);
-  const expenses = useAppSelector((state: RootState) => state.budget.expenses);
+  const incomes = useAppSelector((state) => state.budget.incomes);
+  const [type, setType] = useState<"income" | "expense">("income");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      type: "income",
+      description: "",
+      amount: 0,
+      date: "",
+      category: "",
+    },
+  });
+
+  const onSubmit = (values: FormValues) => {
+    const { type, description, amount, date, category } = values;
 
     if (type === "income") {
-      dispatch(addIncome({ description, amount: parseFloat(amount), date }));
+      dispatch(addIncome({ description, amount, date }));
     } else {
       dispatch(
-        addExpense({ description, amount: parseFloat(amount), date, category })
+        addExpense({ description, amount, date, category: category || "" })
       );
     }
 
-    // Clear the form
-    setDescription("");
-    setAmount("");
-    setDate("");
-    setCategory("");
+    form.reset(); // Clear form after submission
   };
 
   console.log("incomes", incomes);
-  console.log("expenses", expenses);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-4"
-    >
-      {/* Entry Type Selector */}
-      <div>
-        <Label htmlFor="type">Entry Type</Label>
-        <Select
-          onValueChange={(value) => setType(value as "income" | "expense")}
-          defaultValue={type}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Entry Type" />
-          </SelectTrigger>
-          <SelectContent className="w-full">
-            <SelectItem value="income">Income</SelectItem>
-            <SelectItem value="expense">Expense</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Description */}
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Input
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter a description"
-          required
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow"
+      >
+        {/* Entry Type */}
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Entry Type</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value as "income" | "expense");
+                    setType(value as "income" | "expense");
+                  }}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="expense">Expense</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {/* Amount */}
-      <div>
-        <Label htmlFor="amount">Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Enter an amount"
-          required
+        {/* Description */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter a description" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {/* Date */}
-      <div>
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
+        {/* Amount */}
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Amount</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Enter an amount"
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {/* Category (only for expenses) */}
-      {type === "expense" && (
-        <div>
-          <Label htmlFor="category">Category</Label>
-          <Input
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Enter a category"
-            required
+        {/* Date */}
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Category (only for expenses) */}
+        {type === "expense" && (
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter a category" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-      )}
+        )}
 
-      {/* Submit Button */}
-      <Button type="submit" className="w-full">
-        Add {type === "income" ? "Income" : "Expense"}
-      </Button>
-    </form>
+        {/* Submit Button */}
+        <Button type="submit" className="w-full">
+          Add {type === "income" ? "Income" : "Expense"}
+        </Button>
+      </form>
+    </Form>
   );
 }
