@@ -1,12 +1,13 @@
 import { Input } from "@/components/ui/input";
 
-export function Search() {
+export function Search({ ...props }: React.ComponentProps<typeof Input>) {
   return (
-    <div>
+    <div className="w-full flex justify-center">
       <Input
         type="search"
         placeholder="Search..."
-        className="md:w-[100px] lg:w-[300px]"
+        className="lg:max-w-[50%]"
+        {...props}
       />
     </div>
   );
