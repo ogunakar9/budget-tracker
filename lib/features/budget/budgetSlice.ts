@@ -8,6 +8,7 @@ interface BudgetState {
     date: string;
     category: string;
   }>;
+  netChange: number; // Store the calculated net change in the state
 }
 
 // Retrieve initial data from localStorage if available
@@ -18,6 +19,7 @@ const loadFromLocalStorage = () => {
   return {
     incomes: savedIncomes ? JSON.parse(savedIncomes) : [],
     expenses: savedExpenses ? JSON.parse(savedExpenses) : [],
+    netChange: 0, // Default value for net change
   };
 };
 
@@ -51,8 +53,49 @@ const budgetSlice = createSlice({
       state.expenses.push(action.payload);
       localStorage.setItem("expenses", JSON.stringify(state.expenses)); // Save to localStorage
     },
+    calculateNetChange: (state) => {
+      const today = new Date();
+      const currentMonth = today.getMonth(); // 0-indexed (January is 0)
+      const currentYear = today.getFullYear();
+
+      // Filter incomes and expenses for the current month
+      const thisMonthIncomes = state.incomes.filter((income) => {
+        const incomeDate = new Date(income.date);
+        return (
+          incomeDate.getMonth() === currentMonth &&
+          incomeDate.getFullYear() === currentYear
+        );
+      });
+
+      const thisMonthExpenses = state.expenses.filter((expense) => {
+        const expenseDate = new Date(expense.date);
+        return (
+          expenseDate.getMonth() === currentMonth &&
+          expenseDate.getFullYear() === currentYear
+        );
+      });
+
+      // Calculate total income and expenses for this month
+      const totalIncome = thisMonthIncomes.reduce(
+        (sum, income) => sum + income.amount,
+        0
+      );
+
+      const totalExpenses = thisMonthExpenses.reduce(
+        (sum, expense) => sum + expense.amount,
+        0
+      );
+
+      // Update netChange in the state
+      state.netChange = totalIncome - totalExpenses;
+    },
   },
 });
 
-export const { addIncome, addExpense } = budgetSlice.actions;
+// Selectors
+export const selectNetChange = (state: { budget: BudgetState }) =>
+  state.budget.netChange;
+
+export const { addIncome, addExpense, calculateNetChange } =
+  budgetSlice.actions;
 export default budgetSlice.reducer;
