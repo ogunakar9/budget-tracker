@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import budgetReducer from "@/lib/features/budget/budgetSlice";
+import categoryReducer from "@/lib/features/category/categorySlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       budget: budgetReducer,
+      category: categoryReducer,
     },
   });
 };
