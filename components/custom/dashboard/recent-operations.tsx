@@ -5,7 +5,7 @@ import {
   Operation,
   selectLastFiveOperations,
 } from "@/lib/features/budget/budgetSlice";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { useSelector } from "react-redux";
 
 const SaleItem = ({ amount, date, description, type, category }: Operation) => {
@@ -13,11 +13,11 @@ const SaleItem = ({ amount, date, description, type, category }: Operation) => {
     <div className="flex items-center">
       <Avatar className="h-9 w-9">
         <AvatarImage src="/avatars/01.png" alt="Avatar" />
-        <AvatarFallback>
+        <AvatarFallback className="flex items-center justify-center">
           {type === "income" ? (
-            <ChevronUp className="text-green-500" />
+            <TrendingUp className="text-green-500" />
           ) : (
-            <ChevronDown className="text-red-500" />
+            <TrendingDown className="text-red-500" />
           )}
         </AvatarFallback>
       </Avatar>

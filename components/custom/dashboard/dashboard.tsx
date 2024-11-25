@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDateRangePicker } from "@/components/custom/dashboard/date-range-picker";
 import { MainNav } from "@/components/custom/dashboard/main-nav";
 import { Overview } from "@/components/custom/dashboard/overview";
-import { RecentSales } from "@/components/custom/dashboard/recent-sales";
+import { RecentSales } from "@/components/custom/dashboard/recent-operations";
 import { Search } from "@/components/custom/dashboard/search";
 import { UserNav } from "@/components/custom/dashboard/user-nav";
 import ThemeToggler from "@/components/custom/theme-toggle";
@@ -23,9 +23,13 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   calculateLastFiveOperations,
   calculateNetChange,
+  calculateTotalOperationsOfLastMonth,
+  calculateTotalOperationsOfThisMonth,
   selectNetChange,
+  selectTotalOperationsOfThisMonth,
 } from "@/lib/features/budget/budgetSlice";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -33,13 +37,18 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
-  const dispatch = useDispatch();
-  const netChange = useSelector(selectNetChange);
+  const dispatch = useAppDispatch();
+  const netChange = useAppSelector(selectNetChange);
+  const totalOperationsOfThisMonth = useAppSelector(
+    selectTotalOperationsOfThisMonth
+  );
 
   useEffect(() => {
     // Dispatch the calculation when the component loads
     dispatch(calculateNetChange());
     dispatch(calculateLastFiveOperations());
+    dispatch(calculateTotalOperationsOfLastMonth());
+    dispatch(calculateTotalOperationsOfThisMonth());
   }, [dispatch]);
 
   return (
@@ -86,15 +95,15 @@ export default function DashboardPage() {
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold flex gap-1 items-center">
+                  <div className="text-2xl font-bold flex gap-3 items-center">
                     {netChange ? (
                       netChange > 0 ? (
-                        <ChevronUp className="text-green-500" />
+                        <TrendingUp className="text-green-500" />
                       ) : (
-                        <ChevronDown className="text-red-500" />
+                        <TrendingDown className="text-red-500" />
                       )
                     ) : null}{" "}
-                    $ {Math.abs(netChange)}{" "}
+                    ${Math.abs(netChange)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     +20.1% from last month
@@ -191,8 +200,11 @@ export default function DashboardPage() {
                 <CardHeader>
                   <CardTitle>Recent Operations</CardTitle>
                   <CardDescription>
-                    There are a total of incoming and outgoing operations this
-                    month.
+                    There are a total of{" "}
+                    <b className="text-lg text-white">
+                      {totalOperationsOfThisMonth?.length}{" "}
+                    </b>
+                    incoming and outgoing operations this month.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -13,7 +13,8 @@ export interface BudgetState {
   expenses: Array<Operation>;
   netChange: number; // Store the calculated net change in the state
   lastFiveOperations?: Array<Operation>;
-  totalOperationsOfMonth?: Array<Operation>;
+  totalOperationsOfLastMonth?: Array<Operation>;
+  totalOperationsOfThisMonth?: Array<Operation>;
 }
 
 // Retrieve initial data from localStorage if available
@@ -92,6 +93,51 @@ const budgetSlice = createSlice({
       // Get the last 5 operations
       state.lastFiveOperations = allOperations.slice(0, 5);
     },
+    calculateTotalOperationsOfLastMonth: (state) => {
+      const today = new Date();
+      const lastMonth = today.getMonth() === 0 ? 11 : today.getMonth() - 1;
+      const lastMonthYear =
+        today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
+
+      const filterOperationsForMonth = (operation: Operation) => {
+        const operationDate = new Date(operation.date);
+
+        return (
+          operationDate.getMonth() === lastMonth &&
+          operationDate.getFullYear() === lastMonthYear
+        );
+      };
+
+      const lastMonthIncomes = state.incomes.filter(filterOperationsForMonth);
+      const lastMonthExpenses = state.expenses.filter(filterOperationsForMonth);
+
+      state.totalOperationsOfLastMonth = [
+        ...lastMonthIncomes,
+        ...lastMonthExpenses,
+      ];
+    },
+    calculateTotalOperationsOfThisMonth: (state) => {
+      const today = new Date();
+      const thisMonth = today.getMonth();
+      const thisYear = today.getFullYear();
+
+      const filterOperationsForMonth = (operation: Operation) => {
+        const operationDate = new Date(operation.date);
+
+        return (
+          operationDate.getMonth() === thisMonth &&
+          operationDate.getFullYear() === thisYear
+        );
+      };
+
+      const thisMonthIncomes = state.incomes.filter(filterOperationsForMonth);
+      const thisMonthExpenses = state.expenses.filter(filterOperationsForMonth);
+
+      state.totalOperationsOfThisMonth = [
+        ...thisMonthIncomes,
+        ...thisMonthExpenses,
+      ];
+    },
   },
 });
 
@@ -104,8 +150,19 @@ export const selectExpense = (state: { budget: BudgetState }) =>
   state.budget.expenses;
 export const selectLastFiveOperations = (state: { budget: BudgetState }) =>
   state.budget.lastFiveOperations;
+export const selectTotalOperationsOfLastMonth = (state: {
+  budget: BudgetState;
+}) => state.budget.totalOperationsOfLastMonth;
+export const selectTotalOperationsOfThisMonth = (state: {
+  budget: BudgetState;
+}) => state.budget.totalOperationsOfThisMonth;
 
-export const { addOperation, calculateNetChange, calculateLastFiveOperations } =
-  budgetSlice.actions;
+export const {
+  addOperation,
+  calculateNetChange,
+  calculateLastFiveOperations,
+  calculateTotalOperationsOfLastMonth,
+  calculateTotalOperationsOfThisMonth,
+} = budgetSlice.actions;
 
 export default budgetSlice.reducer;
