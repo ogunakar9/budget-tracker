@@ -1,4 +1,5 @@
 "use client";
+
 import { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import ThemeToggler from "@/components/custom/theme-toggle";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  calculateLastFiveOperations,
   calculateNetChange,
   selectNetChange,
 } from "@/lib/features/budget/budgetSlice";
@@ -37,6 +39,7 @@ export default function DashboardPage() {
   useEffect(() => {
     // Dispatch the calculation when the component loads
     dispatch(calculateNetChange());
+    dispatch(calculateLastFiveOperations());
   }, [dispatch]);
 
   return (
@@ -84,11 +87,13 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold flex gap-1 items-center">
-                    {netChange > 0 ? (
-                      <ChevronUp className="text-green-500" />
-                    ) : (
-                      <ChevronDown className="text-red-500" />
-                    )}{" "}
+                    {netChange ? (
+                      netChange > 0 ? (
+                        <ChevronUp className="text-green-500" />
+                      ) : (
+                        <ChevronDown className="text-red-500" />
+                      )
+                    ) : null}{" "}
                     $ {Math.abs(netChange)}{" "}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -184,9 +189,10 @@ export default function DashboardPage() {
               </Card>
               <Card className="col-span-3">
                 <CardHeader>
-                  <CardTitle>Recent Sales</CardTitle>
+                  <CardTitle>Recent Operations</CardTitle>
                   <CardDescription>
-                    You made 265 sales this month.
+                    There are a total of incoming and outgoing operations this
+                    month.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

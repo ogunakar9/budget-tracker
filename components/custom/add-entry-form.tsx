@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { addIncome, addExpense } from "@/lib/features/budget/budgetSlice";
+import { addOperation } from "@/lib/features/budget/budgetSlice";
 import { useAppDispatch } from "@/lib/hooks";
 
 // Validation schema
@@ -63,13 +63,15 @@ export default function AddEntryForm() {
   const onSubmit = (values: FormValues) => {
     const { type, description, amount, date, category } = values;
 
-    if (type === "income") {
-      dispatch(addIncome({ description, amount, date }));
-    } else {
-      dispatch(
-        addExpense({ description, amount, date, category: category || "" })
-      );
-    }
+    dispatch(
+      addOperation({
+        description,
+        amount,
+        date,
+        type,
+        category: category || "",
+      })
+    );
 
     form.reset(); // Clear form after submission
   };
