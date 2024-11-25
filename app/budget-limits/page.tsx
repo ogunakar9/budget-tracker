@@ -1,10 +1,10 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
-import DashboardPage from "@/components/custom/dashboard/dashboard";
+import BudgetLimitPage from "@/components/custom/category/budget-limit";
 
 export default function Dashboard() {
   return (
     <DashboardLayout>
-      <DashboardPage />
+      <BudgetLimitPage />
     </DashboardLayout>
   );
 }
