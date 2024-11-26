@@ -52,23 +52,23 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Working URLS",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Add Income and Expense",
+          url: "/add-entry",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Budget Limits",
+          url: "/budget-limits",
         },
-        {
-          title: "Settings",
-          url: "#",
-        },
+        // {
+        //   title: "Settings",
+        //   url: "#",
+        // },
       ],
     },
     {
