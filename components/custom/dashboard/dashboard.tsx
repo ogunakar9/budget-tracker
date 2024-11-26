@@ -203,7 +203,7 @@ export default function DashboardPage() {
                   <CardTitle>Recent Operations</CardTitle>
                   <CardDescription>
                     There are a total of{" "}
-                    <b className="text-lg text-white">
+                    <b className="text-lg dark:text-white">
                       {totalOperationsOfThisMonth?.length}{" "}
                     </b>
                     incoming and outgoing operations this month.
